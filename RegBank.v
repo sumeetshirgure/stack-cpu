@@ -5,20 +5,19 @@ input wire [15:0] rIn,
 input wire [2:0] rId,
 input wire ldR,
 input wire reset,
-input wire clk,
 output wire [15:0] rOut
 );
 
-// Decoder, anded with load instruction and clock
+// Decoder, anded with load instruction
 wire [7:0] loadRegister;
-and ( loadRegister[0] , clk , ldR , ~rId[2] , ~rId[1] , ~rId[0] );
-and ( loadRegister[1] , clk , ldR , ~rId[2] , ~rId[1] , rId[0] );
-and ( loadRegister[2] , clk , ldR , ~rId[2] , rId[1] , ~rId[0] );
-and ( loadRegister[3] , clk , ldR , ~rId[2] , rId[1] , rId[0] );
-and ( loadRegister[4] , clk , ldR , rId[2] , ~rId[1] , ~rId[0] );
-and ( loadRegister[5] , clk , ldR , rId[2] , ~rId[1] , rId[0] );
-and ( loadRegister[6] , clk , ldR , rId[2] , rId[1] , ~rId[0] );
-and ( loadRegister[7] , clk , ldR , rId[2] , rId[1] , rId[0] );
+and ( loadRegister[0] , ldR , ~rId[2] , ~rId[1] , ~rId[0] );
+and ( loadRegister[1] , ldR , ~rId[2] , ~rId[1] , rId[0] );
+and ( loadRegister[2] , ldR , ~rId[2] , rId[1] , ~rId[0] );
+and ( loadRegister[3] , ldR , ~rId[2] , rId[1] , rId[0] );
+and ( loadRegister[4] , ldR , rId[2] , ~rId[1] , ~rId[0] );
+and ( loadRegister[5] , ldR , rId[2] , ~rId[1] , rId[0] );
+and ( loadRegister[6] , ldR , rId[2] , rId[1] , ~rId[0] );
+and ( loadRegister[7] , ldR , rId[2] , rId[1] , rId[0] );
 
 // Register output wires
 wire [15:0] regData [0:7];
