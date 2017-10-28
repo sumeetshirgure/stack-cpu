@@ -1,6 +1,6 @@
 `timescale 1ns / 1ps
 
-// 32 bit Adder/Subtracter with carry(borrow) / overflow generation
+// 16 bit Adder/Subtracter with carry(borrow) / overflow generation
 module Add_Sub(
 		  input wire [15:0]  x, // x
 		  input wire [15:0]  y, // y

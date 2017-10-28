@@ -115,7 +115,7 @@ module Test;
 		
 		RAM[19] = 16'h1FFF;	// b 0 ; (sort of halt)
 		
-		// Function : r3 <- r3 + r4
+		// Function : r2 <- r2 + r3
 		RAM[101] = 16'h0030;	// push r3
 		RAM[102] = 16'h0920;	// add r2
 		RAM[103] = 16'hF000;	// return
