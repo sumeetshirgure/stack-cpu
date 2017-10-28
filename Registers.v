@@ -12,8 +12,8 @@ assign Output = TransferSignal ? Input : 16'hZZZZ;
 endmodule
 
 module R_16( input wire [15:0] In, output reg [15:0] Out, input wire reset, input wire clk );
-always @ (posedge clk) begin
-	if( reset ) Out = 0;
+always @ (posedge clk or posedge reset) begin
+	if( reset )	Out = 0;
 	else Out = In;
 end
 endmodule
