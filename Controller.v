@@ -6,6 +6,7 @@ input wire reset,
 input wire MFC,
 input wire Status,
 input wire [15:0] Instruction,
+output wire DataReset,
 output wire [8:0] LoadSignal,
 output wire [5:0] TransferSignal,
 output reg [2:0] ALOP,
@@ -45,7 +46,6 @@ or( BranchInstruction , ~_Condition , Status ); // Either unconditional or condi
 reg [2:0] State = 0;
 reg [2:0] Phase = 0;
 
-
 // Operation codes
 parameter ADD  = 1;
 parameter NEGY = 2;
@@ -72,21 +72,14 @@ case( Phase )
 
 Reset : begin
 	if( State == 0 ) begin
-		// T = SP;
+		// DataReset
 		State = 1;
-	end else if ( State == 1 ) begin
-		// PC = ~T;
-		State = 2;
-	end else if ( State == 2 ) begin
-		// PC = PC | T
-		State = 3;
-	end else if ( State == 3 ) begin
-		// T = PC
-		State = 4;
-	end else begin // State = 4
+	end else begin // State = 1
 		// SP = ~T;
 		State = 0;
-		Phase = Fetch;
+		if( !reset ) begin
+			Phase = Fetch;
+		end
 	end
 end
 
@@ -215,7 +208,7 @@ end // End Return phase
 
 default : begin // Post execution phase
 	if( reset ) begin
-		State = 0; Phase = PostEx;
+		State = 0; Phase = Reset;
 	end else begin
 		State = 0; Phase = Fetch;
 	end
@@ -225,34 +218,33 @@ endcase // Case Phase
 end // @always
 
 // Activation of control signals
+assign DataReset = ( Phase == Reset & State == 0 );
+
+assign TransferSignal[trMAR] = 0;
 
 assign TransferSignal[trPC] = (Phase == Fetch & (State==0|State==2)) |
 										BranchInstruction & (Phase == Branch & State == 1 ) |
-										(Phase == Call & ( State == 0 | State == 5 ) ) |
-										( Phase == Reset & State  == 0 ) ;
+										(Phase == Call & ( State == 0 | State == 5 ) ) ;
 
 assign LoadSignal[ldPC] = 	( Phase == Fetch  & State == 2 ) |
 									BranchInstruction & (Phase == Branch & State == 1 ) |
 									( Phase == Call & State == 5 ) |
-									(Phase == Return & State == 2 ) |
-									( Phase == Reset & State == 4 ) ;
+									(Phase == Return & State == 2 ) ;
 
 assign TransferSignal[trSP] = ( Phase == Push & ( State == 0 | State == 3 ) ) |
 										( Phase == Pop & State == 0 ) |
 										( Phase == Call & ( State == 1 | State == 2 ) ) |
-										( Phase == Return & State == 0 ) |
-										(Phase == Reset & ( State == 2 | State == 3 ) ) ;
+										( Phase == Return & State == 0 ) ;
 
 assign LoadSignal[ldSP] = 	( Phase == Push & State == 3 ) |
 									( Phase == Pop & State == 0 ) |
 									( Phase == Call & State == 2 ) |
 									( Phase == Return & State == 0 ) |
-									(Phase == Reset & ( State == 1 | State == 2 ) ) ;
+									(Phase == Reset & State == 1 ) ;
 
 assign LoadSignal[ldT] = ( Phase == Pop & State == 2 ) |
 								( Phase == Branch & State == 0 ) |
-								( Phase == Call & State == 4 ) |
-								( Phase == Reset & ( State == 0 | State == 3 ) ) ;
+								( Phase == Call & State == 4 ) ;
 
 assign LoadSignal[ldMAR] = ( Phase == Fetch & State == 0 ) |
 									( Phase == Push & State == 0 ) |
@@ -287,16 +279,8 @@ case (Phase)
 
 Reset : begin
 	if( State == 0 ) begin
-		// T = SP;
-	end else if ( State == 1 ) begin
-		// PC = ~T;
-		ALOP = NOTY;
-	end else if ( State == 2 ) begin
-		// PC = PC | T
-		ALOP = OR;
-	end else if ( State == 3 ) begin
-		// T = PC
-	end else begin // State = 4
+		// DataReset
+	end else begin
 		// SP = ~T;
 		ALOP = NOTY;
 	end
@@ -370,7 +354,7 @@ end // End Call phase
 Return : begin
 	if( State == 0 ) begin
 		// SP = SP+1;MAR = SP;
-		ALOP = ADD;
+		ALOP = INX;
 	end else if( State == 1 ) begin
 		// MDR = DataIn;
 	end else begin // State == 2
