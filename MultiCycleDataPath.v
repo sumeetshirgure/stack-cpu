@@ -82,7 +82,7 @@ assign rId = Instruction[6:4];
 wire [15:0] R_out;
 wire loadR ;
 and( loadR , LoadSignal[ldR] , clk );
-RegBank regBank( Z , rId , loadR , reset , R_out );
+RegBank regBank( Z , rId , rId , loadR , reset , R_out );
 TransferSwitch transferR( TransferSignal[trR] , R_out , X );
 
 // Temporary register
